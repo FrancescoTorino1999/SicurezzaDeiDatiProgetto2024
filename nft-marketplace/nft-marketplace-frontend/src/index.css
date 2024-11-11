@@ -297,3 +297,23 @@ button:focus-visible {
   padding-inline: var(--margin);
 }
 
+
+.certificate-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.certificate-list h1 {
+  color: #007bff;
+  margin-bottom: 20px;
+}
+
+.certificate-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  width: 100%;
+  max-width: 1200px;
+}
