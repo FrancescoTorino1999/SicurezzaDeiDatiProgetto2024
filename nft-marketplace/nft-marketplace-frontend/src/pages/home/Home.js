@@ -25,7 +25,6 @@ function Home() {
 
   return (
     <div>
-      <h1>Certificati</h1>
       <div className="certificate-list">
         <h1>Certificati</h1>
         <div className="certificate-grid">

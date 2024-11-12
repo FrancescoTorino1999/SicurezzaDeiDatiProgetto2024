@@ -39,6 +39,18 @@ app.get("/api/certificates", async (req, res) => {
     }
 });
 
+// Endpoint per ottenere un certificato specifico per ID
+app.get("/api/certificates/:id", async (req, res) => {
+    try {
+      const certificate = await Certificate.findById(req.params.id);
+      if (!certificate) return res.status(404).json({ message: "Certificato non trovato" });
+      res.json(certificate);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+  
+
 // Avvia il server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
