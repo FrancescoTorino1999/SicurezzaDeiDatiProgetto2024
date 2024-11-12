@@ -14,10 +14,11 @@
     gap: 10px;
     width: max-content;
     padding: 30px !important;
+    transition: 0.5s;
   }
   
   .certificate-card:hover {
-    box-shadow: 8px 8px rgba(3, 206, 252, 1);
+    border: 5px  var(--clr-primary-10) solid;
   }
   
   .certificate-card h3 {

@@ -4,6 +4,7 @@ import Home from './pages/home/Home';
 import Navbar from './components/Navbar/Navbar';
 import Login from './pages/Login/Login';
 import CertificateDetail from './pages/CertificateDetail/CertificateDetail';
+import Footer from './components/Footer/Footer';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" />} />
           
         </Routes>
+        <Footer></Footer>
       </Router>
     </div>
   );

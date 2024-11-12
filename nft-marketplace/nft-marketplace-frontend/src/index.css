@@ -128,14 +128,17 @@ h1 {
 
 button {
   border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
+    border: 1px solid transparent;
+    padding: 0.6em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    background-color: #1a1a1a;
+    cursor: pointer;
+    transition: border-color 0.25s;
+    color: white;
+    border: 3px white solid;
+    background-color: #333 !importantß;
 }
 
 button:hover {
@@ -267,7 +270,7 @@ button:focus-visible {
   }
 
   button {
-    background-color: #f9f9f9;
+    background-color: #333;
   }
 }
 
@@ -315,4 +318,11 @@ button:focus-visible {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   place-items: center;
+}
+
+.colored-span {
+
+  color: white;
+  font-size: 400;
+  margin-inline: 20px;
 }
