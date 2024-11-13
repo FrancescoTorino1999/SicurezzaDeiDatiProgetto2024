@@ -12,7 +12,11 @@
   }
   
   .certificate-detail {
-    max-width: 600px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     margin: auto;
     padding: 20px;
     border: 1px solid #ccc;

@@ -326,3 +326,9 @@ button:focus-visible {
   font-size: 400;
   margin-inline: 20px;
 }
+
+.error-message {
+
+  color: red;
+  margin-top: 10px;
+}
