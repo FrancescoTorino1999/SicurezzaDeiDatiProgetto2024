@@ -26,6 +26,8 @@
     list-style: none;
     display: flex;
     gap: 1.5rem;
+    display: flex;
+    align-items: center;
   }
   
   .navbar-links a {
@@ -44,3 +46,29 @@
     font-weight: bold;
   }
   
+  .account-icon {
+
+    cursor: pointer;
+  }
+
+  .hidden {
+    display: none !important; 
+  }
+
+  .user-info {
+
+    position: absolute;
+    background-color: white;
+    color: #333;
+    border-radius: 30px;
+    border: #333 1px solid;
+    display: flex;
+    flex-direction: column;
+    right: 100px;
+    gap: 20px;
+    min-height: 100px;
+    max-width: 300px;
+    padding: 20px !important;
+    break-after: left;
+    overflow-wrap: break-word;
+  }
