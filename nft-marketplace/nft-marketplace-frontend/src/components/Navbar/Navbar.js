@@ -1,8 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './Navbar.css';
+import {  useNavigate } from 'react-router-dom';
 
-function Navbar() {
+function Navbar({ user, setUser }) {
+  const navigate = useNavigate();
+
+  // Funzione di logout
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // Rimuovi il token
+    setUser(null); // Resetta lo stato utente
+    navigate('/login'); // Reindirizza alla pagina di login
+  };
   return (
       <div className='navbar-div'>
         <nav className="navbar">
@@ -12,7 +21,15 @@ function Navbar() {
               <Link to="/">Home</Link>
             </li>
             <li>
-              <Link className = "button" to="/login">Login</Link>
+                {user ? (
+                  <>
+                    <span>Utente: {user.address}</span>
+                    <button onClick={handleLogout}>Logout</button>
+                  </>
+                ) : (
+                  <Link className = "button" to="/login">Login</Link>
+                )}
+              
             </li>
           </ul>
         </nav>

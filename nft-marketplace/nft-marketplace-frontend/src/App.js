@@ -5,12 +5,14 @@ import Navbar from './components/Navbar/Navbar';
 import Login from './pages/Login/Login';
 import CertificateDetail from './pages/CertificateDetail/CertificateDetail';
 import Footer from './components/Footer/Footer';
+import { useState } from 'react';
 
 function App() {
+  const [user, setUser] = useState(null);
   return (
     <div className='body-site'>
       <Router>
-        <Navbar />
+        <Navbar user={user} setUser={setUser} />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />

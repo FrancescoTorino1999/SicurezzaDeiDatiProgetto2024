@@ -18,7 +18,9 @@
   }
   
   .certificate-card:hover {
-    border: 5px  var(--clr-primary-10) solid;
+    box-shadow: 0 0 5px var(--clr-primary-10), 
+                0 0 10px var(--clr-primary-10), 
+                0 0 15px var(--clr-primary-10);
   }
   
   .certificate-card h3 {
