@@ -9,55 +9,61 @@ mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("MongoDB connected"))
     .catch((err) => console.error("Error connecting to MongoDB:", err));
 
-    /*
-// Definizione dello schema per un certificato
-const certificateSchema = new mongoose.Schema({
-    serverName: String,
-    startDate: Date,
-    endDate: Date,
-    issuer: String,
-    certificateAuthority: String,
-    status: String,
-    certificateCode: String
-});
+    const Certificate = require('./backend/models/Certificate'); // Assicurati che il percorso sia corretto
+    
+    // Funzione per creare dati fittizi e inserire i nuovi certificati
+    async function insertCertificates() {
+        // Elimina tutti i certificati esistenti
+        await Certificate.deleteMany({});
+        console.log("Certificati precedenti eliminati.");
+    
+        // Liste di autorità di certificazione comuni
+        const certificateAuthorities = [
+            "Let's Encrypt", "DigiCert", "GlobalSign", "Sectigo", "GoDaddy", "Entrust", "Certum", "GeoTrust", "RapidSSL", "Comodo"
+        ];
+    
+        const certificates = [];
+        for (let i = 1; i <= 100; i++) {
+            const randomCA = certificateAuthorities[Math.floor(Math.random() * certificateAuthorities.length)];
+            
+            // Genera una data casuale tra oggi e tre mesi nel futuro
+            const today = new Date();
+            const threeMonthsFromNow = new Date();
+            threeMonthsFromNow.setMonth(today.getMonth() + 3);
+            const expiringBetDate = new Date(today.getTime() + Math.random() * (threeMonthsFromNow.getTime() - today.getTime()));
+            
+            const min = 10; // 1000 / 100
+            const max = 20; // 2000 / 100
+            const randomMultiplier = Math.floor(Math.random() * (max - min + 1)) + min;
+        
+            const ethPrice = Math.floor(randomMultiplier * 55279.16); // Converte da euro a ETH
 
-// Creazione del modello
-const Certificate = mongoose.model("Certificate", certificateSchema);
 
-// Funzione per creare dati fittizi e inserire i nuovi certificati
-async function insertCertificates() {
-    // Elimina tutti i certificati esistenti
-    await Certificate.deleteMany({});
-    console.log("Certificati precedenti eliminati.");
-
-    // Liste di autorità di certificazione comuni
-    const certificateAuthorities = [
-        "Let's Encrypt", "DigiCert", "GlobalSign", "Sectigo", "GoDaddy", "Entrust", "Certum", "GeoTrust", "RapidSSL", "Comodo"
-    ];
-
-    const certificates = [];
-    for (let i = 1; i <= 10000; i++) {
-        const randomCA = certificateAuthorities[Math.floor(Math.random() * certificateAuthorities.length)];
-
-        certificates.push({
-            serverName: `Server-${i}`,
-            startDate: new Date(),
-            endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 anno di validità
-            issuer: `Issuer-${Math.floor(Math.random() * 10) + 1}`,
-            certificateAuthority: randomCA,
-            status: "Active",
-            certificateCode: crypto.randomBytes(8).toString("hex") // codice casuale di 16 caratteri esadecimali
-        });
+            certificates.push({
+                certificateId: crypto.randomBytes(8).toString("hex"), // ID unico per ogni certificato
+                serverName: `Server-${i}`,
+                issuedDate: new Date(),
+                expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 anno di validità
+                issuingCA: randomCA,
+                status: "Active",
+                publicKey: crypto.randomBytes(32).toString("hex"), // Chiave pubblica fittizia
+                privateKey: crypto.randomBytes(32).toString("hex"), // Chiave privata fittizia
+                owner: " ", // Campo owner vuoto
+                expiringBetDate: expiringBetDate.toISOString(), // Data casuale entro tre mesi
+                certificateAuthority: randomCA,
+                betters: " ",
+                price: ethPrice
+            });
+        }
+    
+        try {
+            await Certificate.insertMany(certificates);
+            console.log("100 certificati inseriti con successo!");
+        } catch (err) {
+            console.error("Errore durante l'inserimento:", err);
+        }
     }
-
-    try {
-        await Certificate.insertMany(certificates);
-        console.log("100 certificati attivi inseriti con successo!");
-    } catch (err) {
-        console.error("Errore durante l'inserimento:", err);
-    }
-}
-
-// Esegui la funzione di inserimento
-insertCertificates();
-*/
+    
+    // Esegui la funzione di inserimento
+    insertCertificates();
+    

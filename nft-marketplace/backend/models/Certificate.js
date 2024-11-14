@@ -36,6 +36,26 @@ const certificateSchema = new mongoose.Schema({
     type: String,
     required: true,
     select: false // Opzionale, per non includere il privateKey nelle query
+  },
+  owner: {
+    type: String,
+    required: true
+  },
+  expiringBetDate: {
+    type: String,
+    required: true
+  },
+  certificateAuthority: {
+    type: String,
+    required: false
+  },
+  betters: {
+    type: String,
+    required: false
+  },
+  price: {
+    type: String,
+    required: false
   }
 }, { timestamps: true });
 

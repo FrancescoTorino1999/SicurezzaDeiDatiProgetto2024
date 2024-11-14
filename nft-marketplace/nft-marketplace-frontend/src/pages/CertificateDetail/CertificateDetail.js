@@ -22,28 +22,32 @@ function CertificateDetail({user}) {
     fetchCertificate();
   }, [id]);
 
-  const [price, setPrice] = useState(null);
+
+
+  const [expirationBet, setExpirationBet] = useState(null);
 
   useEffect(() => {
-    // Genera un numero casuale tra 1000 e 2000 euro, multiplo di 100
-    const generateEuroPrice = () => {
-      const min = 10; // 1000 / 100
-      const max = 20; // 2000 / 100
-      const randomMultiplier = Math.floor(Math.random() * (max - min + 1)) + min;
-      return randomMultiplier * 100;
-    };
+    const intervalId = setInterval(() => {
+      // Calcola la differenza in millisecondi
+      const difference = new Date(certificate.expiringBetDate) - new Date();
+      
+      if (difference > 0) {
+        // Calcolo di giorni, ore, minuti e secondi in base ai millisecondi
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-    // Converte il prezzo da euro a Gwei
-    const convertEuroToGwei = (euroPrice) => {
-      const ethPrice = euroPrice * 55279.16; // Converte da euro a ETH
-      return ethPrice; // Converte da ETH a Gwei
-    };
+        setExpirationBet(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+      } else {
+        clearInterval(intervalId);
+        setExpirationBet("0d 0h 0m 0s"); // Tempo scaduto
+      }
+    }, 1000);
 
-    // Calcola e imposta il prezzo iniziale in Gwei
-    const euroPrice = generateEuroPrice();
-    const gweiPrice = convertEuroToGwei(euroPrice);
-    setPrice(gweiPrice);
-  }, [id]); 
+    return () => clearInterval(intervalId);
+  }, [certificate]);
+
 
   if (!certificate) return <p>Caricamento...</p>;
 
@@ -52,19 +56,52 @@ function CertificateDetail({user}) {
       <div className='certificate-card'>
         <h2>Dettaglio Certificato</h2>
         <p><strong>ID Certificato:</strong> {certificate._id}</p>
-        <p><strong>Codice Certificato:</strong> {certificate.certificateCode}</p>
         <p><strong>CA Emittente:</strong> {certificate.certificateAuthority}</p>
         <p><strong>Status:</strong> {certificate.status}</p>
-        <p><strong>Data Inizio:</strong> {certificate.startDate}</p>
-        <p><strong>Data Fine:</strong> {certificate.endDate}</p>
-        <p><strong>Prezzo BET:</strong>{price} Wei</p>
+        <p><strong>Data Inizio:</strong>
+        {
+          new Date(certificate.createdAt).toLocaleDateString('it-IT', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+          })}{" "}
+          {
+            new Date(certificate.expiryDate).toLocaleTimeString('it-IT', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        })}
+        </p>
+        <p><strong>Data Fine:</strong>  
+        {
+          new Date(certificate.expiryDate).toLocaleDateString('it-IT', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+          })}{" "}
+          {
+            new Date(certificate.expiryDate).toLocaleTimeString('it-IT', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        })}
+        </p>
+        <p><strong>Prezzo BET:</strong>{certificate.price} Wei</p>
+        {user ? (
+          <>
+            <p><strong>Expiration bet in:</strong> {expirationBet} </p>
+            <p><strong>Actual betters:</strong>{certificate.betters === " " ? " No one has bet yet" : certificate.betters}</p>
+          </>
+        ) : (
+          <Link className = "button" to="/login">Login to see more informarions</Link>
+        )}
       </div>
       {user ? (
           <>
-            <button>Try to BET</button>
+            <button style={{ marginTop: "30px" }}>Try to BET</button>
           </>
         ) : (
-          <Link className = "button" to="/login">Login</Link>
+          <Link style={{ marginTop: "30px" }} className = "button" to="/login">Login</Link>
         )}
       
     </div>
