@@ -49,7 +49,11 @@ const certificateSchema = new mongoose.Schema({
     type: String,
     required: false
   },
-  betters: {
+  bettertesta: {
+    type: String,
+    required: false
+  },
+  bettercroce: {
     type: String,
     required: false
   },

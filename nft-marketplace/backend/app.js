@@ -33,11 +33,21 @@ mongoose.connect(process.env.MONGO_URI, {
 // Endpoint per ottenere i certificati
 app.get("/api/certificates", async (req, res) => {
     try {
-        const certificates = await Certificate.find().limit(100);
-        res.json(certificates);
-    } catch (err) {
-        console.error("Errore nel recupero dei certificati:", err);
-        res.status(500).json({ message: err.message });
+        // Recupera tutti i certificati
+        const certificates = await Certificate.find();
+
+        // Filtro manuale: rimuovi i certificati con sia bettertesta che bettercroce impostati
+        const filteredCertificates = [];
+        for (const certificate of certificates) {
+            if (!(certificate.bettertesta !== " " && certificate.bettercroce !== " ")) {
+                filteredCertificates.push(certificate);
+            }
+        }
+
+        res.status(200).json(filteredCertificates);
+    } catch (error) {
+        console.error("Errore nel recupero dei certificati:", error);
+        res.status(500).send("Errore nel recupero dei certificati.");
     }
 });
 
@@ -112,6 +122,35 @@ app.post('/ethereum/transaction', async (req, res) => {
         res.json({ receipt });
     } catch (error) {
         res.status(401).json({ message: "Autenticazione non valida", error: error.message });
+    }
+});
+
+app.patch("/api/certificates/:id", async (req, res) => {
+    const { id } = req.params;
+    let { bettertesta, bettercroce } = req.body;
+
+    try {
+        // Assicurati che bettertesta e bettercroce siano stringhe
+        if (bettertesta && typeof bettertesta === 'object') {
+            bettertesta = bettertesta.address; // Estrai l'indirizzo
+        }
+        if (bettercroce && typeof bettercroce === 'object') {
+            bettercroce = bettercroce.address; // Estrai l'indirizzo
+        }
+
+        const updateData = {};
+        if (bettertesta) updateData.bettertesta = bettertesta;
+        if (bettercroce) updateData.bettercroce = bettercroce;
+
+        const updatedCertificate = await Certificate.findByIdAndUpdate(id, updateData, { new: true });
+        if (!updatedCertificate) {
+            return res.status(404).send("Certificato non trovato.");
+        }
+
+        res.status(200).json(updatedCertificate);
+    } catch (error) {
+        console.error("Errore durante l'updateCertificate:", error);
+        res.status(500).send("Errore durante l'aggiornamento del certificato.");
     }
 });
 

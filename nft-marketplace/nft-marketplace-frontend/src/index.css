@@ -9,7 +9,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #2c3030;
+    background: url('https://www.transparenttextures.com/patterns/asfalt-dark.png'), #2c3030;
+   background-repeat: repeat;
 }
 
 code {
@@ -138,7 +139,7 @@ button {
     transition: border-color 0.25s;
     color: white;
     border: 3px white solid;
-    background-color: #333 !importantß;
+    background-color: #333 !important;
 }
 
 button:hover {
@@ -337,5 +338,20 @@ button:focus-visible {
 
   height: 90px;
   width: 90px;
-  object-fit: cover;
+  object-fit: contain;
+}
+
+.immagecert-detail {
+
+  height: 200px;
+  width: 200px;
+  object-fit: contain;
+}
+
+.img-container {
+
+  background-color: white;
+  padding: 20px !important;
+  border-radius: 50%;
+  margin-bottom: 50px;
 }

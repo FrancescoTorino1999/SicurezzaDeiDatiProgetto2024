@@ -51,7 +51,8 @@ mongoose.connect(process.env.MONGO_URI)
                 owner: " ", // Campo owner vuoto
                 expiringBetDate: expiringBetDate.toISOString(), // Data casuale entro tre mesi
                 certificateAuthority: randomCA,
-                betters: " ",
+                bettertesta: " ",
+                bettercroce: " ",
                 price: ethPrice
             });
         }

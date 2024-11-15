@@ -35,6 +35,9 @@ function Navbar({ user, setUser }) {
                     </div>
                     <div id="user-info" className={isVisible ? "user-info" : "user-info hidden"}>
                       <strong>Utente: {user.address}</strong>
+                      <button onClick={() => navigate('/user-certificates')}>
+                        My Bets
+                      </button>
                       <button onClick={handleLogout}>Logout</button>
                     </div>
                     

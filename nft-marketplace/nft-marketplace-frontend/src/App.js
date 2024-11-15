@@ -5,6 +5,7 @@ import Navbar from './components/Navbar/Navbar';
 import Login from './pages/Login/Login';
 import CertificateDetail from './pages/CertificateDetail/CertificateDetail';
 import Footer from './components/Footer/Footer';
+import UserBets from './pages/UserBets/UserBets';
 import { useState } from 'react';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login setUser={setUser} />} />
           <Route path="/certificates/:id" element={<CertificateDetail user={user}/>} />
+          <Route path="/user-certificates" element={<UserBets user={user} />} />
           <Route path="*" element={<Navigate to="/" />} />
           
         </Routes>
