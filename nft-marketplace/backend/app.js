@@ -6,6 +6,10 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const web3 = require('../config/web3Config'); // Configurazione di web3
 const Certificate = require("./models/Certificate"); // Modello del certificato
+const { ethers } = require("ethers");
+
+const contractAddress = "0xca03087fA86f65f55f96fE9F3C0f3a363809E166";
+const contractABI = require("./CertificateABI.json");
 
 dotenv.config();
 
@@ -138,6 +142,8 @@ app.patch("/api/certificates/:id", async (req, res) => {
             bettercroce = bettercroce.address; // Estrai l'indirizzo
         }
 
+        console.log(bettercroce, bettertesta)
+
         const updateData = {};
         if (bettertesta) updateData.bettertesta = bettertesta;
         if (bettercroce) updateData.bettercroce = bettercroce;
@@ -154,6 +160,127 @@ app.patch("/api/certificates/:id", async (req, res) => {
     }
 });
 
+app.post("/api/bets", async (req, res) => {
+    const { betId, user1, amount } = req.body;
+  
+    try {
+      const newBet = new Bet({
+        betId,
+        user1,
+        amount,
+      });
+  
+      const savedBet = await newBet.save();
+      res.status(201).json(savedBet);
+    } catch (err) {
+      console.error("Errore nel salvare la scommessa:", err);
+      res.status(500).send("Errore nel salvare la scommessa.");
+    }
+  });
+
+  app.patch("/api/certificates/:id/bet", async (req, res) => {
+    const { id } = req.params;
+    const { user, choice } = req.body;
+
+    console.log("PATCH request received with ID:", id);
+    
+    console.log("Request body:", req.body);
+
+    try {
+        const certificate = await Certificate.findById(id);
+        console.log("Certificate fetched from DB:", certificate);
+
+        if (!certificate) {
+            console.log("Certificate not found for ID:", id);
+            return res.status(404).json({ message: "Certificato non trovato" });
+        }
+
+        // Aggiorna la scommessa basata sulla scelta
+        if (choice === "Testa" && certificate.bettertesta === " ") {
+            certificate.bettertesta = user;
+            console.log(`User ${user} bet on "Testa"`);
+        } else if (choice === "Croce" && certificate.bettercroce === " ") {
+            certificate.bettercroce = user;
+            console.log(`User ${user} bet on "Croce"`);
+        } else {
+            console.log(`Invalid or already placed bet by user: ${user}`);
+            return res.status(400).json({ message: "Scommessa non valida o già effettuata" });
+        }
+
+        // Se entrambe le scommesse sono completate, assegna il vincitore
+        if (certificate.bettertesta !== " " && certificate.bettercroce !== " ") {
+            console.log("Both bets are placed. Determining winner...");
+            const winner = Math.random() < 0.5 ? certificate.bettertesta : certificate.bettercroce;
+            console.log("Winner determined:", winner);
+
+            certificate.owner = winner;
+            certificate.bettertesta = null;
+            certificate.bettercroce = null;
+
+            // Chiama lo smart contract per registrare il vincitore
+            console.log("Registering winner on blockchain...");
+            const result = await registerWinnerOnBlockchain(ethers.BigNumber.from(`0x${betId}`), winner);
+            console.log("Blockchain result:", result);
+
+            if (!result.success) {
+                console.log("Error registering winner on blockchain.");
+                return res.status(500).json({ message: "Errore durante la registrazione sulla blockchain" });
+            }
+        }
+
+        console.log("Saving updated certificate to DB...");
+        await certificate.save();
+        console.log("Certificate updated:", certificate);
+
+        res.json(certificate);
+    } catch (error) {
+        console.error("Errore durante l'aggiornamento del certificato:", error);
+        res.status(500).json({ message: "Errore interno del server" });
+    }
+});
+
+// Funzione per registrare il vincitore sulla blockchain
+async function registerWinnerOnBlockchain(betId, winner) {
+    console.log("registerWinnerOnBlockchain called with betId:", betId, "and winner:", winner);
+
+    try {
+        const contractABI = require("./CertificateABI.json");
+        const contract = new web3.eth.Contract(contractABI, contractAddress);
+        console.log("Contract initialized:", contract);
+
+        const account = process.env.OWNER_ADDRESS;
+        const privateKey = process.env.OWNER_PRIVATE_KEY;
+
+        console.log("Preparing blockchain transaction...");
+        const tx = contract.methods.resolveBet(betId, winner);
+        const gas = await tx.estimateGas({ from: account });
+        const gasPrice = await web3.eth.getGasPrice();
+        const data = tx.encodeABI();
+        const nonce = await web3.eth.getTransactionCount(account);
+
+        console.log("Transaction details:", { gas, gasPrice, nonce });
+
+        const signedTx = await web3.eth.accounts.signTransaction(
+            {
+                to: contractAddress,
+                data,
+                gas,
+                gasPrice,
+                nonce,
+            },
+            privateKey
+        );
+
+        console.log("Signed transaction:", signedTx);
+
+        const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+        console.log("Transazione registrata sulla blockchain:", receipt);
+        return { success: true, receipt };
+    } catch (error) {
+        console.error("Errore durante la registrazione sulla blockchain:", error);
+        return { success: false, error };
+    }
+}
 // Avvia il server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);

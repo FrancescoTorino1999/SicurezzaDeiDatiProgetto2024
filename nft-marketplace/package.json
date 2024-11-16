@@ -10,7 +10,9 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@ethersproject/contracts": "^5.7.0",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "ethers": "^6.13.4",
     "hardhat": "^2.22.15"
   },
   "dependencies": {

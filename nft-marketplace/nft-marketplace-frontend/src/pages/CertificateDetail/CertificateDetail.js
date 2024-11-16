@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import "./CertificateDetail.css";
 import { Link } from 'react-router-dom';
 
+
 function CertificateDetail({ user }) {
   const { id } = useParams();
   const [certificate, setCertificate] = useState(null);
@@ -10,6 +11,7 @@ function CertificateDetail({ user }) {
   const [isChoiceModalOpen, setIsChoiceModalOpen] = useState(false);
   const [disableTesta, setDisableTesta] = useState(false);
   const [disableCroce, setDisableCroce] = useState(false);
+  
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -56,30 +58,28 @@ function CertificateDetail({ user }) {
 
   const handleChoice = async (choice) => {
     if (!certificate) return;
-
+  
     try {
-      const updateField = choice === "Testa" ? "bettertesta" : "bettercroce";
-      const response = await fetch(`http://localhost:8100/api/certificates/${certificate._id}`, {
+      const response = await fetch(`http://localhost:8100/api/certificates/${certificate._id}/bet`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ [updateField]: user }),
+        body: JSON.stringify({ user: user.address, choice }),
       });
-
-      if (response.ok) {
-        const updatedCertificate = await response.json();
-        setCertificate(updatedCertificate);
-
-        // Aggiorna i pulsanti in base alla scelta
-        setDisableTesta(updatedCertificate.bettertesta.trim() !== "");
-        setDisableCroce(updatedCertificate.bettercroce.trim() !== "");
-        handleCloseChoiceModal();
-      } else {
-        console.error("Errore nell'aggiornare il certificato.");
-      }
+  
+      if (!response.ok) throw new Error("Errore durante la scommessa.");
+  
+      const updatedCertificate = await response.json();
+      setCertificate(updatedCertificate);
+  
+      // Mostra il risultato del vincitore se è stato deciso
+      
+  
+      handleCloseChoiceModal();
     } catch (err) {
       console.error("Errore:", err);
+      alert("Errore durante la scommessa.");
     }
   };
 
@@ -111,9 +111,9 @@ function CertificateDetail({ user }) {
                 ? "Hai scommesso Testa"
                 : certificate.bettercroce === user.address
                 ? "Hai scommesso Croce"
-                : certificate.bettertesta
+                : certificate.bettertesta !== " "
                 ? "Un utente ha scommesso Testa"
-                : certificate.bettercroce
+                : certificate.bettercroce !== " "
                 ? "Un utente ha scommesso Croce"
                 : "Nessuna scommessa è stata fatta"}
             </strong>
