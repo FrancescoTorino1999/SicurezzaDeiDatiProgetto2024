@@ -37,6 +37,22 @@ const certificateSchema = new mongoose.Schema({
     required: true,
     select: false // Opzionale, per non includere il privateKey nelle query
   },
+  crtFileContent: {
+    type: String,
+    required: false // Contenuto del file .crt
+  },
+  pemFileContent: {
+    type: String,
+    required: false // Contenuto del file .pem
+  },
+  crtFilePath: {
+    type: String,
+    required: false // Percorso del file .crt sul filesystem
+  },
+  pemFilePath: {
+    type: String,
+    required: false // Percorso del file .pem sul filesystem
+  },
   owner: {
     type: String,
     required: true

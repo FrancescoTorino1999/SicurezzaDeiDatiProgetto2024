@@ -91,6 +91,23 @@ function CertificateDetail({ user }) {
       <div className='img-container'>
         <img className="immagecert-detail" alt="icon" src={`../images/${certificate.certificateAuthority}.png`} />
       </div>
+      <div className='button-container'>
+        <a
+          href={`../certificates/${certificate.certificateId}.crt`}
+          download={`../certificates/${certificate.certificateId}.crt`}
+          className="button"
+        >
+          Download Certificate
+        </a>
+
+        <a
+          href={`../certificates/${certificate.certificateId}.pub`}
+          download={`../certificates/${certificate.certificateId}.pub`}
+          className="button"
+        >
+          Download Public Key
+        </a>
+      </div>
       <div className='certificate-card'>
         <h2>Certificate Details</h2>
             

@@ -1,17 +1,18 @@
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+
+// SPDX-License-Identifier: UNLICENSED
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "hardhat/console.sol";
 
 contract BettingNFT is ERC721, Ownable {
     struct Bet {
         address user1;
         address user2;
         uint256 amount;
-        bool resolved;
         address winner;
-        bool outcome; // true = heads, false = tails
+        bool resolved;
     }
 
     mapping(uint256 => Bet) public bets; // Bet ID -> Bet details
@@ -19,79 +20,91 @@ contract BettingNFT is ERC721, Ownable {
     uint256 public betCount;
     uint256 public nftIdCounter;
 
+    event BetCreated(uint256 betId, uint256 nftId, address indexed user1, address indexed user2, uint256 amount);
+    event BetResolved(uint256 betId, address indexed winner);
+
     constructor() ERC721("BettingNFT", "BET") Ownable(msg.sender) {
         nftIdCounter = 0;
         betCount = 0;
+        console.log("Contract deployed by:", msg.sender);
+        console.log("Timestamp:", block.timestamp);
     }
 
-    // Funzione per mintare un NFT
-    function mintNFT(address to) public onlyOwner {
-        _safeMint(to, nftIdCounter);
-        nftIdCounter++;
-    }
+    // Crea una scommessa associando due utenti e un importo
+    function createBet(address user1, address user2, uint256 amount) public payable onlyOwner returns (uint256) {
+        require(amount > 0, "Amount must be greater than 0");
 
-    event BetPlaced(uint256 betId, uint256 nftId, address indexed user1, uint256 amount);
-    event BetJoined(uint256 betId, address indexed user2);
-    event BetResolved(uint256 betId, address indexed winner, bool outcome);
-
-    // Mint a new NFT and create a bet
-    function createBet(uint256 amount) public payable returns (uint256) {
-        require(msg.value == amount, "Must send the exact betting amount");
-
+        uint256 newBetId = betCount ++;
         uint256 newNftId = nftIdCounter;
-        uint256 newBetId = betCount;
 
+        console.log("Creating bet with ID:", newBetId);
+        console.log("User1:", user1);
+        console.log("User2:", user2);
+        console.log("Amount:", amount);
+
+        // Registra la scommessa
         bets[newBetId] = Bet({
-            user1: msg.sender,
-            user2: address(0),
+            user1: user1,
+            user2: user2,
             amount: amount,
-            resolved: false,
             winner: address(0),
-            outcome: false
+            resolved: false
         });
 
         nftToBetId[newNftId] = newBetId;
 
-        _safeMint(msg.sender, newNftId);
+        console.log("Minting NFT with ID:", newNftId, "to User1:", user1);
+
+        // Minta un NFT e assegnalo a user1 come detentore iniziale
+        _safeMint(user1, newNftId);
 
         nftIdCounter++;
         betCount++;
 
-        emit BetPlaced(newBetId, newNftId, msg.sender, amount);
+        emit BetCreated(betCount, newNftId, user1, user2, amount);
+        console.log("Bet created successfully with ID:", newBetId);
 
         return newBetId;
     }
 
-    // Join an existing bet
-    function joinBet(uint256 betId) public payable {
-        Bet storage bet = bets[betId];
-        require(bet.user2 == address(0), "Bet already joined");
-        require(msg.value == bet.amount, "Must send the exact betting amount");
+    // Risolvi una scommessa calcolando testa o croce e verificando i bilanci
+    function  resolveBet(uint256 betId) public payable onlyOwner {
+        console.log("Resolving bet with ID:", betId);
 
-        bet.user2 = msg.sender;
-
-        emit BetJoined(betId, msg.sender);
-    }
-
-    // Resolve a bet and transfer the NFT ownership
-    function resolveBet(uint256 betId, bool outcome) public onlyOwner {
         Bet storage bet = bets[betId];
         require(!bet.resolved, "Bet already resolved");
-        require(bet.user2 != address(0), "Bet needs two participants");
+        console.log("User1:", bet.user1);
+        console.log("User2:", bet.user2);
+        require(bet.user1 != address(0) && bet.user2 != address(0), "Invalid users");
+
+        console.log("Bet loaded with amount:", bet.amount);
+
+        // Determina casualmente il vincitore
+        address winnerCandidate = (block.timestamp % 2 == 0) ? bet.user1 : bet.user2;
+        console.log("Winner candidate selected:", winnerCandidate);
+
+        // Verifica i bilanci degli utenti
+        if (winnerCandidate.balance >= bet.amount) {
+            bet.winner = winnerCandidate;
+            console.log("Winner confirmed:", winnerCandidate);
+        } else if ((winnerCandidate == bet.user1 ? bet.user2 : bet.user1).balance >= bet.amount) {
+            bet.winner = winnerCandidate == bet.user1 ? bet.user2 : bet.user1;
+            console.log("Alternate winner selected:", bet.winner);
+        } else {
+            bet.winner = address(0); // Nessuno vince
+            console.log("No winner due to insufficient balance");
+        }
 
         bet.resolved = true;
-        bet.outcome = outcome;
 
-        address winner = outcome ? bet.user1 : bet.user2;
-        bet.winner = winner;
+        // Trasferisci l'NFT al vincitore, se c'è
+        if (bet.winner != address(0)) {
+            uint256 nftId = nftToBetId[betId];
+            console.log("Transferring NFT with ID:", nftId, "to Winner:", bet.winner);
+            _transfer(ownerOf(nftId), bet.winner, nftId);
+        }
 
-        // Transfer the NFT to the winner
-        uint256 nftId = nftToBetId[betId];
-        _transfer(ownerOf(nftId), winner, nftId);
-
-        // Transfer funds to the winner
-        payable(winner).transfer(bet.amount * 2);
-
-        emit BetResolved(betId, winner, outcome);
+        emit BetResolved(betId, bet.winner);
+        console.log("Bet resolved successfully with winner:", bet.winner);
     }
 }

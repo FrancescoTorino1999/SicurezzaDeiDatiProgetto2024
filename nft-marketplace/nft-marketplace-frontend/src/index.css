@@ -355,3 +355,10 @@ button:focus-visible {
   border-radius: 50%;
   margin-bottom: 50px;
 }
+
+.button-container {
+
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
