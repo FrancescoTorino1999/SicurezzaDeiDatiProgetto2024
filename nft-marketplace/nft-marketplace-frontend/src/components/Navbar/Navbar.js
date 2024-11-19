@@ -38,6 +38,9 @@ function Navbar({ user, setUser }) {
                       <button onClick={() => navigate('/user-certificates')}>
                         My Bets
                       </button>
+                      <button onClick={() => navigate('/user-owned-certificates')}>
+                        My Certificates
+                      </button>
                       <button onClick={handleLogout}>Logout</button>
                     </div>
                     

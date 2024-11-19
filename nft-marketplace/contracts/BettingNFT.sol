@@ -69,7 +69,6 @@ contract BettingNFT is ERC721, Ownable {
         // Determina il vincitore
         address winner = _determineWinner(bet.testa, bet.croce);
         console.log("Winner determined:", winner);
-        bet.winner = winner;
         bet.completed = true;
 
         // Trasferisci i fondi all'owner

@@ -7,6 +7,7 @@ import CertificateDetail from './pages/CertificateDetail/CertificateDetail';
 import Footer from './components/Footer/Footer';
 import UserBets from './pages/UserBets/UserBets';
 import { useState } from 'react';
+import UserOwnedBets from './pages/UserOwnedBets/UserOwnedBets';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -20,6 +21,7 @@ function App() {
           <Route path="/login" element={<Login setUser={setUser} setPassword={setPassword} />} />
           <Route path="/certificates/:id" element={<CertificateDetail user={user} password={password}/>} /> 
           <Route path="/user-certificates" element={<UserBets user={user} />} />
+          <Route path="/user-owned-certificates" element={<UserOwnedBets user={user} />} />
           <Route path="*" element={<Navigate to="/" />} />
           
         </Routes>

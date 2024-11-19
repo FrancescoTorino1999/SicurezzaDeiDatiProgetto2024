@@ -10,7 +10,7 @@ const { ethers } = require("ethers");
 const { v4: uuidv4 } = require('uuid');
 
 
-const contractAddress = "0xC9413c90f76076C24480bDE47391198D7444922c";
+const contractAddress = "0x15AB41935271D01783B7F191e18B2468AbcfF639";
 const contractABI = require("./CertificateABI.json");
 
 dotenv.config();
@@ -46,6 +46,27 @@ app.get("/api/certificates", async (req, res) => {
         const filteredCertificates = [];
         for (const certificate of certificates) {
             if (!(certificate.bettertesta !== " " && certificate.bettercroce !== " ")) {
+                filteredCertificates.push(certificate);
+            }
+        }
+
+        res.status(200).json(filteredCertificates);
+    } catch (error) {
+        console.error("Errore nel recupero dei certificati:", error);
+        res.status(500).send("Errore nel recupero dei certificati.");
+    }
+});
+
+app.get("/api/allCertificatesOwned/:id", async (req, res) => {
+    try {
+        const id = req.params.id;
+        // Recupera tutti i certificati
+        const certificates = await Certificate.find();
+        console.log(id)
+        // Filtro manuale: rimuovi i certificati con sia bettertesta che bettercroce impostati
+        const filteredCertificates = [];
+        for (const certificate of certificates) {
+            if (certificate.owner == id) {
                 filteredCertificates.push(certificate);
             }
         }
@@ -240,7 +261,7 @@ app.post("/api/bets", async (req, res) => {
         if (certificate.bettercroce !== " " && certificate.bettertesta !== " ") {
             let winner = null;
         
-            winner = await contract.methods.getWinner(certificate.certificateId).call();
+            winner = await contract.methods.getWinner(id).call();
         
             
             certificate.owner = winner;
