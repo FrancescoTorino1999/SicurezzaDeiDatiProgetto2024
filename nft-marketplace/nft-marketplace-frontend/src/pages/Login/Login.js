@@ -3,8 +3,9 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; // Importa useNavigate
 import "./Login.css";
 
-function Login({ setUser }) { // Ricevi setUser come prop per aggiornare lo stato utente
+function Login({ setUser, setPassword: setParentPassword }) { // Ricevi setUser come prop per aggiornare lo stato utente
   const [username, setUsername] = useState('');
+  const [privateKey, setPrivateKey] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const navigate = useNavigate(); // Usa useNavigate per reindirizzare
@@ -12,6 +13,7 @@ function Login({ setUser }) { // Ricevi setUser come prop per aggiornare lo stat
   // Funzione per gestire il submit del form di login
   const handleLogin = async () => {
     try {
+      setPassword(password);
       // Invia richiesta al server per autenticazione
       const response = await axios.post('http://localhost:8100/auth/login', {
         username,
@@ -53,7 +55,10 @@ function Login({ setUser }) { // Ricevi setUser come prop per aggiornare lo stat
               type="password"
               required
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setParentPassword(e.target.value);
+              }}
             />
             <label>Password</label>
           </div>

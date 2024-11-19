@@ -10,14 +10,15 @@ import { useState } from 'react';
 
 function App() {
   const [user, setUser] = useState(null);
+  const [password, setPassword] = useState(null);
   return (
     <div className='body-site'>
       <Router>
-        <Navbar user={user} setUser={setUser} />
+        <Navbar user={user} setUser={setUser}  />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login setUser={setUser} />} />
-          <Route path="/certificates/:id" element={<CertificateDetail user={user}/>} />
+          <Route path="/login" element={<Login setUser={setUser} setPassword={setPassword} />} />
+          <Route path="/certificates/:id" element={<CertificateDetail user={user} password={password}/>} /> 
           <Route path="/user-certificates" element={<UserBets user={user} />} />
           <Route path="*" element={<Navigate to="/" />} />
           

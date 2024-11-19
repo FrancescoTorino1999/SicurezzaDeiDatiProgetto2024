@@ -4,7 +4,7 @@ import "./CertificateDetail.css";
 import { Link } from 'react-router-dom';
 
 
-function CertificateDetail({ user }) {
+function CertificateDetail({ user, password }) {
   const { id } = useParams();
   const [certificate, setCertificate] = useState(null);
   const [expirationBet, setExpirationBet] = useState(null);
@@ -65,7 +65,7 @@ function CertificateDetail({ user }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ user: user.address, choice }),
+        body: JSON.stringify({ user: user.address, choice, password: password }),
       });
   
       if (!response.ok) throw new Error("Errore durante la scommessa.");

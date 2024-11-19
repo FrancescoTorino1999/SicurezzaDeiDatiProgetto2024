@@ -200,86 +200,18 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "betId",
-        "type": "uint256"
+        "internalType": "string",
+        "name": "certificateId",
+        "type": "string"
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "nftId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "user1",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "user2",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "BetCreated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "betId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "user1",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "user2",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "BetCreated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "betId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
         "internalType": "address",
         "name": "winner",
         "type": "address"
       }
     ],
-    "name": "BetResolved",
+    "name": "BetCompleted",
     "type": "event"
   },
   {
@@ -364,84 +296,42 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "betCount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
-        "internalType": "uint256",
+        "internalType": "string",
         "name": "",
-        "type": "uint256"
+        "type": "string"
       }
     ],
     "name": "bets",
     "outputs": [
       {
         "internalType": "address",
-        "name": "user1",
+        "name": "testa",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "user2",
+        "name": "croce",
         "type": "address"
       },
       {
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "completed",
+        "type": "bool"
       },
       {
         "internalType": "address",
         "name": "winner",
         "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "resolved",
-        "type": "bool"
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "user1",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "user2",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "createBet",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -453,6 +343,25 @@
       }
     ],
     "name": "getApproved",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "certificateId",
+        "type": "string"
+      }
+    ],
+    "name": "getWinner",
     "outputs": [
       {
         "internalType": "address",
@@ -488,6 +397,24 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "certificateId",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "choice",
+        "type": "string"
+      }
+    ],
+    "name": "joinBet",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "name",
     "outputs": [
@@ -516,12 +443,12 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
+        "internalType": "string",
         "name": "",
-        "type": "uint256"
+        "type": "string"
       }
     ],
-    "name": "nftToBetId",
+    "name": "nftToCertificateId",
     "outputs": [
       {
         "internalType": "uint256",
@@ -567,19 +494,6 @@
   {
     "inputs": [],
     "name": "renounceOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "betId",
-        "type": "uint256"
-      }
-    ],
-    "name": "resolveBet",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

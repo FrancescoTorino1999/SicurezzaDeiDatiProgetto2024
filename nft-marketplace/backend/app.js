@@ -10,7 +10,7 @@ const { ethers } = require("ethers");
 const { v4: uuidv4 } = require('uuid');
 
 
-const contractAddress = "0xE2ECf41969342f255299196263Fc63f2a35a6c26";
+const contractAddress = "0xC9413c90f76076C24480bDE47391198D7444922c";
 const contractABI = require("./CertificateABI.json");
 
 dotenv.config();
@@ -182,22 +182,16 @@ app.post("/api/bets", async (req, res) => {
 
   app.patch("/api/certificates/:id/bet", async (req, res) => {
     const { id } = req.params;
-    const { user, choice } = req.body;
-
-    console.log("PATCH request received with ID:", id);
-    
-    console.log("Request body:", req.body);
+    const { user, choice, password } = req.body;
 
     try {
         const certificate = await Certificate.findById(id);
-        console.log("Certificate fetched from DB:", certificate);
 
         if (!certificate) {
-            console.log("Certificate not found for ID:", id);
             return res.status(404).json({ message: "Certificato non trovato" });
         }
 
-        // Aggiorna la scommessa basata sulla scelta
+        // Verifica se la scelta è valida e aggiorna il certificato
         if (choice === "Testa" && certificate.bettertesta === " ") {
             certificate.bettertesta = user;
             console.log(`User ${user} bet on "Testa"`);
@@ -209,152 +203,63 @@ app.post("/api/bets", async (req, res) => {
             return res.status(400).json({ message: "Scommessa non valida o già effettuata" });
         }
 
-        if (certificate.bettertesta !== " " && certificate.bettercroce !== " ") {
-            //console.log("Both bets are placed. Determining winner...");
-            //const winner = Math.random() < 0.5 ? certificate.bettertesta : certificate.bettercroce;
-            //console.log("Winner determined:", winner);
+        // Importo della scommessa
+        const amount = certificate.price; // Converte il prezzo in wei
 
-            //certificate.owner = winner;
+        
+        // Configura il contratto
+        const contract = new web3.eth.Contract(contractABI, contractAddress);
 
-            // Chiama lo smart contract per registrare il vincitore
-            console.log("Registering winner on blockchain...");
-            const result = await registerWinnerOnBlockchain(uuidv4(), certificate.bettertesta, certificate.bettercroce, certificate.price);
-            console.log("Blockchain result:", result);
+        // Prepara la transazione per il pagamento
+        const tx = contract.methods.joinBet(id, choice,);
+        const gasEstimate = await contract.methods.joinBet(id, choice).estimateGas({
+            from: user,
+            value: amount,
+        });
+        const gas = Math.ceil(gasEstimate * 1.5);
+        const gasPrice = await web3.eth.getGasPrice();
+        const data = tx.encodeABI();
+        const nonce = await web3.eth.getTransactionCount(user);
+
+        // Firma e invia la transazione
+        const signedTx = await web3.eth.accounts.signTransaction(
+            {
+                to: contractAddress,
+                data,
+                gas,
+                gasPrice,
+                value: amount,
+                nonce,
+            },
+            password // La chiave privata dell'utente
+        );
+
+        const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+        console.log(receipt);
+
+        if (certificate.bettercroce !== " " && certificate.bettertesta !== " ") {
+            let winner = null;
+        
+            winner = await contract.methods.getWinner(certificate.certificateId).call();
+        
+            
+            certificate.owner = winner;
+            
+        
         }
-
+        // Salva il certificato modificato
         console.log("Saving updated certificate to DB...");
         await certificate.save();
         console.log("Certificate updated:", certificate);
-
         res.json(certificate);
     } catch (error) {
-        console.error("Errore durante l'aggiornamento del certificato:", error);
-        res.status(500).json({ message: "Errore interno del server" });
+        console.error("Errore durante l'aggiornamento del certificato o la transazione:", error);
+        res.status(500).json({ message: "Errore durante l'aggiornamento del certificato o la transazione", error: error.message });
     }
 });
 
-async function registerWinnerOnBlockchain(betId, user1, user2, amount) {
-    console.log("registerWinnerOnBlockchain called with parameters:");
-    console.log("betId:", betId);
-    console.log("user1:", user1);
-    console.log("user2:", user2);
-    console.log("amount:", amount);
 
-    try {
-        console.log("Loading contract ABI and address...");
-        const contractABI = require("./CertificateABI.json");
-        const contract = new web3.eth.Contract(contractABI, contractAddress);
-        console.log("Contract initialized:", contract);
 
-        const account = process.env.OWNER_ADDRESS; // Owner dell'NFT
-        const privateKey = process.env.OWNER_PRIVATE_KEY;
-
-        console.log("Account used for transaction:", account);
-
-        // **Transazione per creare la scommessa**
-        console.log("Preparing to create bet on blockchain...");
-        const txCreate = contract.methods.createBet(user1, user2, web3.utils.toWei(amount.toString(), 'ether'));
-        console.log("Transaction object for creating bet:", txCreate);
-
-        const gasCreate = await txCreate.estimateGas({ from: account });
-        console.log("Estimated gas for creating bet:", gasCreate);
-
-        const gasPriceCreate = await web3.eth.getGasPrice();
-        console.log("Current gas price:", gasPriceCreate);
-
-        const dataCreate = txCreate.encodeABI();
-        console.log("Encoded ABI data for creating bet:", dataCreate);
-
-        const nonceCreate = await web3.eth.getTransactionCount(account);
-        console.log("Current nonce for account:", nonceCreate);
-
-        const signedTxCreate = await web3.eth.accounts.signTransaction(
-            {
-                to: contractAddress,
-                data: dataCreate,
-                gas: gasCreate,
-                gasPrice: gasPriceCreate,
-                nonce: nonceCreate,
-            },
-            privateKey
-        );
-
-        console.log("Signed transaction for creating bet:", signedTxCreate);
-
-        const receiptCreate = await web3.eth.sendSignedTransaction(signedTxCreate.rawTransaction);
-        console.log("Transaction receipt for creating bet:", JSON.stringify(receiptCreate, null, 2));
-
-        // **Recupera l'ID della scommessa**
-        console.log("Retrieving BetCreated event from receipt...");
-        const betCreatedEvent = receiptCreate.logs.find(
-            (log) => log.topics && log.topics[0] === web3.utils.sha3("BetCreated(uint256,address,address,uint256)")
-        );
-
-        if (!betCreatedEvent) {
-            console.log("BetCreated event not found in transaction receipt.");
-            throw new Error("BetCreated event not found in receipt.");
-        }
-
-        console.log("BetCreated event found:", betCreatedEvent);
-
-        const resolvedBetId = web3.eth.abi.decodeParameter("uint256", betCreatedEvent.data);
-        console.log("Bet ID retrieved from BetCreated event:", resolvedBetId);
-
-        // **Transazione per risolvere la scommessa**
-        console.log("Preparing to resolve bet on blockchain...");
-        const txResolve = contract.methods.resolveBet(resolvedBetId);
-        console.log("Transaction object for resolving bet:", txResolve);
-
-        const gasResolve = await txResolve.estimateGas({ from: account });
-        console.log("Estimated gas for resolving bet:", gasResolve);
-
-        const gasPriceResolve = await web3.eth.getGasPrice();
-        console.log("Current gas price for resolving bet:", gasPriceResolve);
-
-        const dataResolve = txResolve.encodeABI();
-        console.log("Encoded ABI data for resolving bet:", dataResolve);
-
-        const nonceResolve = await web3.eth.getTransactionCount(account);
-        console.log("Current nonce for resolving transaction:", nonceResolve);
-
-        const signedTxResolve = await web3.eth.accounts.signTransaction(
-            {
-                to: contractAddress,
-                data: dataResolve,
-                gas: gasResolve,
-                gasPrice: gasPriceResolve,
-                nonce: nonceResolve,
-            },
-            privateKey
-        );
-
-        console.log("Signed transaction for resolving bet:", signedTxResolve);
-
-        const receiptResolve = await web3.eth.sendSignedTransaction(signedTxResolve.rawTransaction);
-        console.log("Transaction receipt for resolving bet:", JSON.stringify(receiptResolve, null, 2));
-
-        // **Recupera il vincitore dagli eventi**
-        console.log("Retrieving BetResolved event from receipt...");
-        const winnerEvent = receiptResolve.logs.find(
-            (log) => log.topics && log.topics[0] === web3.utils.sha3("BetResolved(uint256,address)")
-        );
-
-        if (!winnerEvent) {
-            console.log("BetResolved event not found in transaction receipt.");
-            throw new Error("Winner not found in BetResolved event.");
-        }
-
-        console.log("BetResolved event found:", winnerEvent);
-
-        const winner = web3.eth.abi.decodeParameter("address", winnerEvent.data);
-        console.log("Winner retrieved from BetResolved event:", winner);
-
-        return { success: true, receipts: { create: receiptCreate, resolve: receiptResolve }, winner };
-    } catch (error) {
-        console.error("Error during blockchain interaction:", error);
-        return { success: false, error: error.message };
-    }
-}
 // Avvia il server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
